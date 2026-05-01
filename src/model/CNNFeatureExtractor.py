@@ -1,4 +1,4 @@
-from torch.nn import Module, Conv1d, BatchNorm1d, AvgPool1d, ReLU, LeakyReLU, MaxPool1d
+from torch.nn import Module, Conv1d, BatchNorm1d, AvgPool1d, ReLU, LeakyReLU, MaxPool1d, Dropout2d
 import torch.nn.functional as F
 from src.CauchyActivation import CauchyActivation
 
@@ -11,6 +11,7 @@ class CNNFeatureExtractor(Module):
         self.batch_norm = BatchNorm1d(in_channels)
         self.avg_pool = AvgPool1d(kernel_size=pool_size, stride=stride*2, count_include_pad=False)
         self.max_pool = MaxPool1d(kernel_size=kernel_size, stride=stride, padding=padding)
+        self.dropout = Dropout2d(0.15)
 
     def forward(self, x, mask):
 
@@ -23,5 +24,7 @@ class CNNFeatureExtractor(Module):
         x = x * mask
         x = self.avg_pool(x)
         mask = self.avg_pool(mask)
+
+        x = self.dropout(x)
 
         return x, mask

@@ -65,43 +65,12 @@ class TraceFileDataset(Dataset):
             output_size=(self.batch_size, self.max_trace_file_length)
         )
 
-        #data_batch = self.min_max_scaling_padding_ignore(data_batch, self.pad_value)
-        #data_batch = self.z_score_normalization_padding_ignore(data_batch, self.pad_value)
         label_batch = torch.stack(label, dim=0)
 
         data_batch = data_batch.unsqueeze(1)
 
         return data_batch, label_batch
 
-
-    def z_score_normalization_padding_ignore(self, data, pad_value):
-
-        mask = (data != pad_value)
-
-        # Compute zscore ignoring padded values
-        masked_data = data[mask].float()
-
-        mean = masked_data.mean()
-        std = masked_data.std()
-
-        normalized = torch.full_like(data, pad_value, dtype=torch.float32)
-        normalized[mask] = (masked_data - mean) / (std + 1e-8)
-        return normalized
-
-    def min_max_scaling_padding_ignore(self, data, pad_value):
-
-        mask = (data != pad_value)
-
-        # Compute min/max ignoring padded values
-        masked_data = data[mask].float()
-
-        d_min = masked_data.min()
-        d_max = masked_data.max()
-
-        scaled_data = torch.full_like(data, pad_value, dtype=torch.float32)
-        scaled_data[mask] = (masked_data - d_min) / (d_max - d_min + 1e-8)
-
-        return scaled_data
 
     @staticmethod
     def check_trace_padding(trace, pad_width, pad_value=0):

@@ -13,7 +13,8 @@ class logFormatter(logging.Formatter):
     white = "\x1b[37;20m"
     black = "\x1b[30;20m"
     reset = "\x1b[0m"
-    fmt = '%(asctime)s - %(levelname)s - %(message)s'
+    #fmt = '%(asctime)s - %(levelname)s - %(message)s'
+    fmt = "%(message)s" # Default for no formatting
     colors = ['grey', 'green', 'blue', 'cyan', 'magenta', 'yellow', 'red', 'bold_red', 'white']
 
     def __init__(self, log_colors_dict):
