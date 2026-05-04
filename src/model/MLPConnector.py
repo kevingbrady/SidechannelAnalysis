@@ -14,7 +14,6 @@ class MLPConnector(Module):
 
         self.output_shape = int((self.batch_size*self.hidden_layers[-1]/256)), 256
         self.layer_norms = ModuleList([LayerNorm(x) for x in self.hidden_layers])
-        #self.layer_norms = ModuleList([RMSNorm(hidden_one), RMSNorm(hidden_two), RMSNorm(hidden_three)])
         self.dropout = Dropout(0.55)
 
     def forward(self, x):

@@ -1,16 +1,11 @@
-import base64
-
 import h5py
 from torch.utils.data import IterableDataset, Dataset
 from pathlib import Path
 import torch
 import os
-import sys
 import trsfile
 import numpy as np
 import h5py as h5
-import json
-import shutil
 
 class TraceFileDataset(Dataset):
     def __init__(self, transform=None, pre_transform=None, data_dir=''):

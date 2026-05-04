@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Module, AdaptiveAvgPool1d
+from torch.nn import Module
 from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 from src.utils import calculate_guessing_entropy
 from model.CNNFeatureExtractor import CNNFeatureExtractor
@@ -29,6 +29,10 @@ class KeyExtractor(Module):
 
         self.to(self.device, non_blocking=True)
 
+
+    def zero_gradients(self):
+        for param in self.parameters():
+            param.grad = None
 
     def forward(self, x):
 

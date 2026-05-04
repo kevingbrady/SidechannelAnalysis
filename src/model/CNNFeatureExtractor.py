@@ -1,6 +1,4 @@
 from torch.nn import Module, Conv1d, BatchNorm1d, AvgPool1d, ReLU, LeakyReLU, MaxPool1d, Dropout2d
-import torch.nn.functional as F
-from src.CauchyActivation import CauchyActivation
 
 
 class CNNFeatureExtractor(Module):
