@@ -37,7 +37,6 @@ class TraceFileDataset(Dataset):
 
     def __getitem__(self, idx):
 
-
         trace_data = h5py.File('processed/trace_data.h5', 'r', swmr=True)
 
         data = trace_data['traces'][idx]
@@ -122,7 +121,6 @@ class TraceFileDataset(Dataset):
                         key = np.frombuffer(bytes.fromhex('cafebabedeadbeef0001020304050607'), dtype=np.uint8)
 
                         for idx in range(0, len(trace_list), shard_size):
-                            print(idx, trace_idx, shard_size)
                             self.traces[trace_idx:trace_idx + shard_size] = trace_list[idx:idx + shard_size]
                             self.labels[trace_idx:trace_idx + shard_size] = key
                             trace_idx += shard_size
@@ -145,8 +143,6 @@ class TraceFileDataset(Dataset):
                     file_lengths[filepath] = self.set_file_shape(trace)
 
         self.total_traces = sum({x for x, y in file_lengths.values()})
-        print(file_lengths)
-        print(self.total_traces)
         return file_lengths
 
     def set_file_shape(self, trace):

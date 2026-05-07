@@ -22,7 +22,8 @@ if __name__ == '__main__':
     setup_logger()
     device = (torch.device('cpu'), torch.device('cuda:0'))[torch.cuda.is_available()]
     dataset = TraceFileDataset(data_dir='data')
-    print(device)
+    logging.info(f'{logFormatter.gold}' + str(dataset))
+    logging.info(f'{logFormatter.gold}' + str(device))
 
     r1 = range(0, 200000)
     r2 = range(300000, dataset.total_traces)
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     criterion = CrossEntropyLoss().to(model.device, non_blocking=True)
 
     epochs = 20
-    training_samples = dataset.batch_size * 200
+    training_samples = dataset.batch_size * 400
     early_stop = 3
     total_time = time.time()
     test_performance = []
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         val_loader = DataLoader(
             validation,
             batch_size=dataset.batch_size,
-            sampler=SubsetRandomSampler(torch.randint(0, len(validation), (dataset.batch_size * 4,))),
+            sampler=SubsetRandomSampler(torch.randint(0, len(validation), (dataset.batch_size * 8,))),
             collate_fn=dataset.trace_collate_fn,
             num_workers=int(os.cpu_count() / 6),
             pin_memory=True
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         test_loader = DataLoader(
             test,
             batch_size=dataset.batch_size,
-            sampler=SubsetRandomSampler(torch.randint(0, len(test), (dataset.batch_size * 30,))),
+            sampler=SubsetRandomSampler(torch.randint(0, len(test), (dataset.batch_size * 60,))),
             collate_fn=dataset.trace_collate_fn,
             num_workers=int(os.cpu_count() / 6),
             pin_memory=True
