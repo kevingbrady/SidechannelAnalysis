@@ -138,4 +138,6 @@ if __name__ == '__main__':
             if t_accuracy <= min(check_early_stop):
                 break
 
+    os.makedirs('final_model', exist_ok=True)
+    torch.save(model.state_dict(), 'final_model/key_extractor_model.pth')
     logging.info(f'{logFormatter.gold}Total training time: {pretty_time_delta(time.time() - total_time)}')
