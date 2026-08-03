@@ -40,9 +40,9 @@ if __name__ == '__main__':
         device=device
     )
 
-    model = torch.compile(model, mode='reduce-overhead')
+    model = torch.compile(model, mode='reduce-overhead', fullgraph=True)
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=torch.tensor(0.00001), betas=(0.9, 0.999))
+    optimizer = torch.optim.AdamW(model.parameters(), lr=torch.tensor(0.00001), betas=(0.9, 0.999), capturable=True)
     model.zero_gradients()
     criterion = CrossEntropyLoss().to(model.device, non_blocking=True)
 
