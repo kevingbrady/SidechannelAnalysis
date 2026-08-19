@@ -47,44 +47,46 @@ if __name__ == '__main__':
     criterion = CrossEntropyLoss().to(model.device, non_blocking=True)
 
     epochs = 20
-    training_samples = dataset.batch_size * 400
     early_stop = 3
     total_time = time.time()
-    test_performance = []
+    validation_performance = []
+
+    training, validation, test = random_split(subset, [0.8, 0.1, 0.1])
+
+    train_loader = DataLoader(
+        training,
+        batch_size=dataset.batch_size,
+        #sampler=SubsetRandomSampler(torch.randint(0, len(training), (training_samples,))),
+        collate_fn=dataset.trace_collate_fn,
+        num_workers=os.cpu_count(),
+        shuffle=True,
+        pin_memory=True
+    )
+
+    val_loader = DataLoader(
+        validation,
+        batch_size=dataset.batch_size,
+        sampler=SubsetRandomSampler(torch.randint(0, len(validation), (dataset.batch_size * 8,))),
+        collate_fn=dataset.trace_collate_fn,
+        num_workers=int(os.cpu_count() / 6),
+        shuffle=False,
+        pin_memory=True
+    )
+
+    test_loader = DataLoader(
+        test,
+        batch_size=dataset.batch_size,
+        sampler=SubsetRandomSampler(torch.randint(0, len(test), (dataset.batch_size * 60,))),
+        collate_fn=dataset.trace_collate_fn,
+        num_workers=int(os.cpu_count() / 6),
+        shuffle=False,
+        pin_memory=True
+    )
 
     for epoch in range(epochs):
 
         epoch_start_time = time.time()
         trace_count = 0
-
-        training, validation, test = random_split(subset, [0.8, 0.1, 0.1])
-
-        train_loader = DataLoader(
-            training,
-            batch_size=dataset.batch_size,
-            sampler=SubsetRandomSampler(torch.randint(0, len(training), (training_samples,))),
-            collate_fn=dataset.trace_collate_fn,
-            num_workers=os.cpu_count(),
-            pin_memory=True
-        )
-
-        val_loader = DataLoader(
-            validation,
-            batch_size=dataset.batch_size,
-            sampler=SubsetRandomSampler(torch.randint(0, len(validation), (dataset.batch_size * 8,))),
-            collate_fn=dataset.trace_collate_fn,
-            num_workers=int(os.cpu_count() / 6),
-            pin_memory=True
-        )
-
-        test_loader = DataLoader(
-            test,
-            batch_size=dataset.batch_size,
-            sampler=SubsetRandomSampler(torch.randint(0, len(test), (dataset.batch_size * 60,))),
-            collate_fn=dataset.trace_collate_fn,
-            num_workers=int(os.cpu_count() / 6),
-            pin_memory=True
-        )
 
         model.train()
 
@@ -114,10 +116,10 @@ if __name__ == '__main__':
                              v_precision,
                              v_recall,
                              v_GE) = model.get_model_metrics(v_batch, v_label, criterion)
-
+                    validation_performance.append(v_accuracy)
                     model.train()
 
-                logging.info(f'{logFormatter.gold}Epoch {epoch + 1}: [{pretty_time_delta(time.time() - epoch_start_time)}] {logFormatter.green}TRAIN [{loss.item():.5f}] [accuracy, precision, recall, GE]: [{accuracy.item():.3f}, {precision.item():.3f}, {recall.item():.3f}, {GE.item():.3f}] {logFormatter.orange}VALIDATION [{v_loss.item():.5f}] [{v_accuracy.item():.3f}, {v_precision.item():.3f}, {v_recall.item():.3f}, {v_GE.item():.3f}] {logFormatter.purple}({trace_count}/{training_samples})')
+                logging.info(f'{logFormatter.gold}Epoch {epoch + 1}: [{pretty_time_delta(time.time() - epoch_start_time)}] {logFormatter.green}TRAIN [{loss.item():.5f}] [accuracy, precision, recall, GE]: [{accuracy.item():.3f}, {precision.item():.3f}, {recall.item():.3f}, {GE.item():.3f}] {logFormatter.orange}VALIDATION [{v_loss.item():.5f}] [{v_accuracy.item():.3f}, {v_precision.item():.3f}, {v_recall.item():.3f}, {v_GE.item():.3f}] {logFormatter.purple}({trace_count}/{len(training)})')
 
         logging.info(f'{logFormatter.gold}Epoch {epoch + 1} completed in {pretty_time_delta(time.time() - epoch_start_time)}')
 
@@ -130,11 +132,10 @@ if __name__ == '__main__':
                  t_recall,
                  t_GE) = model.get_model_metrics(t_batch, t_label, criterion)
 
-        test_performance.append(t_accuracy)
         logging.info(f'{logFormatter.blue}TEST [{t_loss.item():.5f}] [accuracy, precision, recall, GE]: [{t_accuracy.item():.3f}, {t_precision.item():.3f}, {t_recall.item():.3f}, {t_GE.item():.3f}]')
 
         if epoch > early_stop:
-            check_early_stop = test_performance[(-1 * early_stop):]
+            check_early_stop = validation_performance[(-1 * early_stop):]
             if t_accuracy <= min(check_early_stop):
                 break
 
